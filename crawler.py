@@ -8,8 +8,6 @@ from datetime import datetime
 from urllib.parse import urlencode, urlparse, parse_qs
 import abc
 from config import DOMAIN_TZ_DIC
-#from creator import Creator
-#from tasks import req
 import asyncio
 import aiohttp
 
@@ -27,18 +25,11 @@ class Crawler(metaclass=abc.ABCMeta):
         self.loop = asyncio.get_event_loop()
         # print("__init__", "domain",self.domain, "path",self.path, self.query, self.TZ, self.list_sz)
 
-    #def __del__(self):
-        #self.loop.close()
-
     def _get_response(self, url):
         response = requests.get(url)
         if not response.ok:
             response.raise_for_status()
         return response
-
-    #def _get_content(self, url):
-    #    content = req.request.delay(url).get()
-    #    return content
 
     async def _get_content(self, url):
         content = ""
@@ -66,11 +57,8 @@ class BinanceCrawler(Crawler):
 
     def get_list(self):
         list_url = "https://www.binance.com/kr/support/announcement"
-        #response = self._get_response(list_url)
-        #content = self._get_content(list_url)
         contents = self.loop.run_until_complete(asyncio.gather(self._get_content(list_url)))
         content = contents[0]
-        #dom = BeautifulSoup(response.content, 'html.parser')
         dom = BeautifulSoup(content, 'html.parser')
         app_data = dom.select_one("#__APP_DATA")
         app_dic = json.loads(app_data.text)
@@ -93,10 +81,8 @@ class BinanceCrawler(Crawler):
         for post_dic in post_list:
             url = post_dic["url"]
             title = post_dic["title"]
-            #response = self._get_response(url)
             contents = self.loop.run_until_complete(asyncio.gather(self._get_content(url)))
             content = contents[0]
-            #dom = BeautifulSoup(response.content, 'html.parser')
             dom = BeautifulSoup(content, 'html.parser')
             article_data = dom.select_one("#__APP_DATA")
             article = dom.select_one("#__APP")
